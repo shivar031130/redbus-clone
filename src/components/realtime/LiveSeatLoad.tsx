@@ -4,12 +4,45 @@ import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
 
-interface SeatMetrics {
+export interface SeatMetrics {
   total_seats: number;
   booked_seats: number;
   locked_seats: number;
   available_seats: number;
 }
+
+export interface ComputedOccupancy {
+  total: number;
+  occupied: number;
+  percent: number;
+  available: number;
+}
+
+export function computeSeatOccupancy(metrics: SeatMetrics | null): ComputedOccupancy {
+  // Early return guard for null/undefined metrics
+  if (!metrics) {
+    return {
+      total: 0,
+      occupied: 0,
+      percent: 0,
+      available: 0,
+    };
+  }
+
+  // TypeScript automatically knows metrics is NOT null here
+  const total = metrics.total_seats;
+  const occupied = metrics.booked_seats + metrics.locked_seats;
+  const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
+  const available = metrics.available_seats;
+
+  return {
+    total,
+    occupied,
+    percent,
+    available,
+  };
+}
+
 
 type SeatStatusRow = {
   status: 'available' | 'selected' | 'booked' | 'locked';
@@ -96,9 +129,7 @@ export function LiveSeatLoad({ scheduleId, compact, className, initialMetrics }:
     };
   }, [scheduleId, supabase]);
 
-  const total = metrics?.total_seats ?? 0;
-  const occupied = (metrics?.booked_seats ?? 0) + (metrics?.locked_seats ?? 0);
-  const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
+  const { total, occupied, percent, available } = computeSeatOccupancy(metrics);
 
   return (
     <div className={cn('rounded-2xl border border-border bg-white p-4 shadow-sm', className, compact && 'p-3')}>
@@ -120,7 +151,7 @@ export function LiveSeatLoad({ scheduleId, compact, className, initialMetrics }:
       </div>
 
       <div className={cn('mt-3 text-xs text-muted-foreground flex justify-between', compact && 'mt-2 text-[10px]')}>
-        <span>Available: {metrics?.available_seats ?? 0}</span>
+        <span>Available: {available}</span>
         <span>Occupied: {percent}%</span>
       </div>
     </div>

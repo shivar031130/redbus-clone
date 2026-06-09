@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, BusFront, Map, CalendarClock, BookOpen, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, BusFront, Map, CalendarClock, BookOpen, LogOut, User, Compass } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -15,6 +15,7 @@ const sidebarLinks = [
   { name: 'Routes', href: '/operator/routes', icon: Map },
   { name: 'Schedules', href: '/operator/schedules', icon: CalendarClock },
   { name: 'Bookings', href: '/operator/bookings', icon: BookOpen },
+  { name: 'Live Tracking', href: '/operator/tracking', icon: Compass },
 ];
 
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {

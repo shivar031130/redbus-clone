@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, ShieldCheck, CalendarCheck, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldCheck, CalendarCheck, LogOut, User, MapPin } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -14,6 +14,7 @@ const sidebarLinks = [
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Operators', href: '/admin/operators', icon: ShieldCheck },
   { name: 'Bookings', href: '/admin/bookings', icon: CalendarCheck },
+  { name: 'Live Tracking', href: '/admin/tracking', icon: MapPin },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

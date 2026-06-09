@@ -48,52 +48,57 @@ export function ChatPanel({ bookingId, className }: ChatPanelProps) {
 
     let isMounted = true;
 
+    const findOrCreateThread = async (): Promise<ChatThread> => {
+      const { data: existing, error } = await supabase
+        .from('chat_threads')
+        .select('id, client_id, operator_id')
+        .eq('booking_id', bookingId)
+        .maybeSingle();
+      if (error) throw error;
+      if (existing) return existing as ChatThread;
+
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .select('client_id, schedules(routes(operator_id))')
+        .eq('id', bookingId)
+        .single();
+      if (bookingError) throw bookingError;
+
+      const operatorId = (booking as any)?.schedules?.routes?.operator_id;
+      const clientId = booking?.client_id;
+      if (!operatorId || !clientId) {
+        throw new Error('Chat thread could not be initialized.');
+      }
+
+      const { data: created, error: createError } = await supabase
+        .from('chat_threads')
+        .insert({ booking_id: bookingId, client_id: clientId, operator_id: operatorId })
+        .select('id, client_id, operator_id')
+        .single();
+      if (createError) throw createError;
+      return created as ChatThread;
+    };
+
+    const loadMessageHistory = async (threadId: string): Promise<ChatMessage[]> => {
+      const { data, error: historyError } = await supabase
+        .from('chat_messages')
+        .select('id, sender_id, body, created_at')
+        .eq('thread_id', threadId)
+        .order('created_at', { ascending: true });
+      if (historyError) throw historyError;
+      return (data ?? []) as ChatMessage[];
+    };
+
     const loadThread = async () => {
       setLoading(true);
       try {
-        const { data: existing, error } = await supabase
-          .from('chat_threads')
-          .select('id, client_id, operator_id')
-          .eq('booking_id', bookingId)
-          .maybeSingle();
-        if (error) throw error;
-
-        let resolvedThread = existing as ChatThread | null;
-
-        if (!resolvedThread) {
-          const { data: booking, error: bookingError } = await supabase
-            .from('bookings')
-            .select('client_id, schedules(routes(operator_id))')
-            .eq('id', bookingId)
-            .single();
-          if (bookingError) throw bookingError;
-
-          const operatorId = booking?.schedules?.routes?.operator_id;
-          const clientId = booking?.client_id;
-          if (!operatorId || !clientId) {
-            throw new Error('Chat thread could not be initialized.');
-          }
-
-          const { data: created, error: createError } = await supabase
-            .from('chat_threads')
-            .insert({ booking_id: bookingId, client_id: clientId, operator_id: operatorId })
-            .select('id, client_id, operator_id')
-            .single();
-          if (createError) throw createError;
-          resolvedThread = created as ChatThread;
-        }
-
+        const resolvedThread = await findOrCreateThread();
         if (!isMounted) return;
         setThread(resolvedThread);
 
-        const { data: history, error: historyError } = await supabase
-          .from('chat_messages')
-          .select('id, sender_id, body, created_at')
-          .eq('thread_id', resolvedThread.id)
-          .order('created_at', { ascending: true });
-        if (historyError) throw historyError;
+        const history = await loadMessageHistory(resolvedThread.id);
         if (!isMounted) return;
-        setMessages((history ?? []) as ChatMessage[]);
+        setMessages(history);
       } catch (err: any) {
         if (isMounted) {
           toast.error(err.message || 'Failed to load chat.');
@@ -111,7 +116,8 @@ export function ChatPanel({ bookingId, className }: ChatPanelProps) {
   }, [bookingId, isLoading, supabase, user]);
 
   useEffect(() => {
-    if (!thread) return;
+    if (!thread) 
+      return;
 
     const channel = supabase
       .channel(`chat_thread_${thread.id}`)

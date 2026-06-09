@@ -18,7 +18,7 @@ export default function ClientDashboardPage() {
           <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
             <Ticket className="h-8 w-8 mb-4 opacity-80" />
             <div className="text-4xl font-bold mb-1">1</div>
-            <div className="text-blue-100 font-medium">Upcoming Trip</div>
+            <div className="text-rose-100 font-medium">Upcoming Trip</div>
           </CardContent>
         </Card>
         

@@ -36,7 +36,7 @@ export default function Home() {
             
             <h1 className="text-5xl md:text-7xl font-light tracking-tighter text-white mb-6 leading-[1.1]">
               Elevate your <br />
-              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200">
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-rose-200">
                 journey.
               </span>
             </h1>
@@ -126,7 +126,7 @@ export default function Home() {
       </section>
 
       {/* 3. THE EXPERIENCE (Split Layout) */}
-      <section className="py-24 bg-slate-950 text-white overflow-hidden">
+      <section className="py-24 bg-[#1a0308] text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
