@@ -3,6 +3,7 @@ import { AuthProvider } from "@/components/shared/AuthProvider";
 import { Footer } from "@/components/shared/Footer";
 import { Navbar } from "@/components/shared/Navbar";
 import { Toaster } from "@/components/ui/sonner";
+import { AiAssistantChatbot } from "@/components/shared/AiAssistantChatbot";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -34,6 +35,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <Toaster position="top-center" richColors />
+          <AiAssistantChatbot />
           <Suspense fallback={null}>
             <AuthErrorNotifier />
           </Suspense>

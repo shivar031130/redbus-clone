@@ -591,7 +591,7 @@ Status Display & Conditional Render
 
 ---
 
-## 3.4 Structural Coverage
+## 3.1 Structural Coverage
 
 Structural coverage metrics are essential for evaluating the thoroughness and quality of code-level testing. By measuring which parts of the source code are executed during test suites, developers can identify untested execution paths, potential edge cases, and hidden bugs in BusSphere's real-time features. 
 
@@ -605,265 +605,221 @@ For this analysis, we define and apply the following four primary coverage crite
 
 ### Feature 1: Real-time Messaging (`ChatPanel.tsx`)
 
-**1. `loadThread()` — Initialize Chat Thread**
+#### 1. `useEffect` — Realtime Channel Subscription
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc), Condition Coverage (Cc)
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All nodes 1–6 executed across the test suite)
-  - **Decision Coverage (Dc):** **100.0%** (All 12 Boolean outcomes for the 6 decisions evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 6 unique execution routes tested)
-  - **Condition Coverage (Cc):** **100.0%** (Both clauses of `!operatorId || !clientId` evaluated to True and False)
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$)
+* *Condition Coverage ($C_c$) is **Not Applicable** since there are no compound logical expressions.*
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–8 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (All 4 Boolean outcomes of the 2 decisions evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 4 unique execution paths exercised)
 
-* **Statement Coverage (Sc):** Ensures the entire initialization logic executes, including querying the `chat_threads` table for an existing thread, resolving operator/client identities from `bookings` when no thread exists, inserting a new thread record, loading history from `chat_messages`, and invoking state setters.
-* **Decision Coverage (Dc):** Focuses on evaluating both True and False outcomes for all decision nodes:
-  - `if (error)` (querying threads)
-  - `if (!resolvedThread)` (checking thread existence)
-  - `if (bookingError)` (querying booking details)
-  - `if (!operatorId || !clientId)` (validating identities)
-  - `if (createError)` (inserting thread)
-  - `if (historyError)` (fetching message history)
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Validates all distinct paths from function start to finish:
-  - **Path 1 (Existing Thread Found):** Covers **66.7% Sc** (Nodes 1, 2, 3, 5, finally), **25.0% Dc** (3/12 outcomes: `error` = F, `!resolvedThread` = F, `historyError` = F), and **16.7% Pc** (1/6 paths).
-  - **Path 2 (New Thread Created):** Covers **83.3% Sc** (Nodes 1, 2, 3, 4, 5, finally), **50.0% Dc** (6/12 outcomes: `error` = F, `!resolvedThread` = T, `bookingError` = F, `!operatorId || !clientId` = F, `createError` = F, `historyError` = F), and **16.7% Pc** (1/6 paths).
-  - **Path 3 (Booking Query Fails):** Covers **66.7% Sc** (Nodes 1, 2, 3, 4 [partial], 6, finally), **33.3% Dc** (4/12 outcomes: `error` = F, `!resolvedThread` = T, `bookingError` = T), and **16.7% Pc** (1/6 paths).
-  - **Path 4 (Operator/Client ID Missing):** Covers **66.7% Sc** (Nodes 1, 2, 3, 4 [partial], 6, finally), **33.3% Dc** (4/12 outcomes: `error` = F, `!resolvedThread` = T, `bookingError` = F, `!operatorId || !clientId` = T), and **16.7% Pc** (1/6 paths).
-  - **Path 5 (Database operation fails):** Covers **50.0% Sc** (Nodes 1, 2, 6, finally), **16.7% Dc** (2/12 outcomes: `error` = T), and **16.7% Pc** (1/6 paths).
-  - **Path 6 (Component unmounts mid-execution):** Covers **33.3% Sc** (isMounted guard), **0.0% Dc**, and **16.7% Pc** (1/6 paths).
-* **Condition Coverage (Cc):** Applies to the compound Boolean decision `if (!operatorId || !clientId)`. To achieve Cc, tests must evaluate:
-  - Condition A (`!operatorId`) as True and False.
-  - Condition B (`!clientId`) as True and False.
-  - Scenarios: (1) Operator ID missing, (2) Client ID missing, (3) Both missing, (4) Both present.
+* **Statement coverage** confirms all instructions execute, covering the thread check guard, Supabase channel creation, Postgres event listener configuration (`.on('postgres_changes', ...)`), component state dispatch callback (`setMessages`), and the unmount cleanup hook.
+* **Branch coverage** evaluates the thread check guard `if (!thread)` and the deduplication check `if (current.some((m) => m.id === next.id))` to ensure database updates are either appended or filtered cleanly.
+* **Path coverage** exercises four distinct paths: (1) Thread is falsy causing immediate guard return. (2) Thread is present, setting up subscription and returning cleanup. (3) Event fired with duplicate message ID, filtering it out. (4) Event fired with new message ID, appending it to state.
+
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Precondition Guard Fails - No Active Thread)**: Nodes `[1] -> [2] (True) -> [3]` (Exit).
+  - *Trigger*: `thread` is null or undefined.
+  - *Metrics*: Sc = 37.5% (3/8 nodes), Dc = 25.0% (1/4 outcomes: `!thread` = True), Pc = 25.0% (1/4 paths).
+- **Path 2 (Successful Setup & Cleanup on Unmount)**: Nodes `[1] -> [2] (False) -> [4] -> [8]` (Exit).
+  - *Trigger*: `thread` is active; the channel establishes a Postgres listener and returns a cleanup handler that invokes `removeChannel()` on unmount.
+  - *Metrics*: Sc = 50.0% (4/8 nodes), Dc = 25.0% (1/4 outcomes: `!thread` = False), Pc = 25.0% (1/4 paths).
+- **Path 3 (Real-time Message Callback - Duplicate Message)**: Nodes `[1] -> [2] (False) -> [4] -> [5] (True) -> [6] -> [8]`.
+  - *Trigger*: Supabase emits an INSERT event, but the message ID matches an existing record in state (deduplication filters it).
+  - *Metrics*: Sc = 75.0% (6/8 nodes), Dc = 50.0% (2/4 outcomes: `!thread` = False, duplicate check = True), Pc = 25.0% (1/4 paths).
+- **Path 4 (Real-time Message Callback - New Message Appended)**: Nodes `[1] -> [2] (False) -> [4] -> [5] (False) -> [7] -> [8]`.
+  - *Trigger*: Supabase emits an INSERT event with a unique message ID, successfully appending the payload to the messages state array.
+  - *Metrics*: Sc = 75.0% (6/8 nodes), Dc = 50.0% (2/4 outcomes: `!thread` = False, duplicate check = False), Pc = 25.0% (1/4 paths).
 
 ---
 
-**2. `handleSend()` — Send Chat Message**
+#### 2. `loadMessageHistory()` — Load Messages History
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc), Condition Coverage (Cc)
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All nodes 1–5 executed across the test suite)
-  - **Decision Coverage (Dc):** **100.0%** (All 4 Boolean outcomes of the 2 decisions evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 5 unique execution paths exercised)
-  - **Condition Coverage (Cc):** **100.0%** (All 6 condition outcomes evaluated for `!draft.trim()`, `!user`, and `!thread`)
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$), Condition Coverage ($C_c$)
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–6 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (All 4 Boolean outcomes of the 2 decisions evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 3 unique execution paths exercised)
+  - **Condition Coverage (Cc)**: **100.0%** (All conditions evaluated to True and False)
 
-* **Statement Coverage (Sc):** Ensures all statements run, including the input guard, `setSending(true)`, building the message payload, database insertion, draft clearing, error catching, and the `finally` block resetting sending states.
-* **Decision Coverage (Dc):** Verifies both True and False outcomes for the decisions:
-  - Guard statement: `if (!draft.trim() || !user || !thread)`
-  - Error check: `if (error)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Exercises all execution paths:
-  - **Path 1 (Empty draft):** Covers **20.0% Sc** (Node 1 only), **25.0% Dc** (1/4 outcomes: guard = T), **20.0% Pc** (1/5 paths), and **16.7% Cc** (1/6 conditions: `!draft.trim()` = T).
-  - **Path 2 (Missing User):** Covers **20.0% Sc** (Node 1 only), **25.0% Dc** (1/4 outcomes: guard = T), **20.0% Pc** (1/5 paths), and **33.3% Cc** (2/6 conditions: `!draft.trim()` = F, `!user` = T).
-  - **Path 3 (Missing Thread):** Covers **20.0% Sc** (Node 1 only), **25.0% Dc** (1/4 outcomes: guard = T), **20.0% Pc** (1/5 paths), and **50.0% Cc** (3/6 conditions: `!draft.trim()` = F, `!user` = F, `!thread` = T).
-  - **Path 4 (Successful Send):** Covers **80.0% Sc** (Nodes 1, 2, 3, 4, finally), **50.0% Dc** (2/4 outcomes: guard = F, `error` = F), **20.0% Pc** (1/5 paths), and **100.0% Cc**.
-  - **Path 5 (Database Insert Error):** Covers **80.0% Sc** (Nodes 1, 2, 3, 4, 5, finally), **50.0% Dc** (2/4 outcomes: guard = F, `error` = T), **20.0% Pc** (1/5 paths), and **100.0% Cc**.
-* **Condition Coverage (Cc):** Applies to the multi-clause guard `if (!draft.trim() || !user || !thread)`. To satisfy Cc, each constituent Boolean condition must evaluate to True and False:
-  - Condition A (`!draft.trim()`) is True (empty message) and False.
-  - Condition B (`!user`) is True (unauthenticated) and False.
-  - Condition C (`!thread`) is True (no active thread) and False.
+* **Statement coverage** confirms all instructions execute, covering the database select query, checking query result error flags, throwing exceptions, and returning the fetched message array.
+* **Branch coverage** tests the database exception branch `if (historyError)` and the nullish coalescing check `data ?? []` to verify both query error and empty history scenarios.
+* **Path coverage** verifies three execution scenarios: (1) Database query fails → throws `historyError` exception. (2) Database query succeeds and data is present → returns messages array. (3) Database query succeeds but data is null/empty → returns empty array fallback.
 
----
-
-**3. `useEffect` — Realtime Channel Subscription**
-
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc)
-* *Condition Coverage (Cc) is **Not Applicable** as there are no compound Boolean expressions.*
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All setup, callback, and cleanup statements executed)
-  - **Decision Coverage (Dc):** **100.0%** (All 4 Boolean outcomes of the 2 decisions evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 4 unique execution paths exercised)
-
-* **Statement Coverage (Sc):** Verifies that the subscription setup runs fully, including channel creation, event listener registration, the subscription callback, and the unmount cleanup returning `removeChannel()`.
-* **Decision Coverage (Dc):** Evaluates outcomes of the single-condition decisions:
-  - `if (!thread)` (effect guard)
-  - `if (current.some((m) => m.id === next.id))` (deduplication check)
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Covers all possible code paths:
-  - **Path 1 (Thread is null):** Covers **20.0% Sc** (Node 1), **25.0% Dc** (1/4 outcomes: `!thread` = T), and **25.0% Pc** (1/4 paths).
-  - **Path 2 (Duplicate Message Arrives):** Covers **80.0% Sc** (Nodes 1, 2, 3, 5), **75.0% Dc** (3/4 outcomes: `!thread` = F, dup check = T), and **25.0% Pc** (1/4 paths).
-  - **Path 3 (New Message Arrives):** Covers **100.0% Sc** (Nodes 1, 2, 3, 4, 5), **75.0% Dc** (3/4 outcomes: `!thread` = F, dup check = F), and **25.0% Pc** (1/4 paths).
-  - **Path 4 (Component Unmounts):** Covers **40.0% Sc** (Node 5 cleanup), **0.0% Dc**, and **25.0% Pc** (1/4 paths).
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Database Query Fails - Error Thrown)**: Nodes `[1] -> [2] -> [3] (True) -> [4]` (Exit).
+  - *Trigger*: Supabase query returns an error payload, causing the function to reject immediately.
+  - *Metrics*: Sc = 66.7% (4/6 nodes), Dc = 50.0% (2/4 outcomes: `historyError` = True), Pc = 33.3% (1/3 paths).
+- **Path 2 (Database Query Succeeds - Data Present)**: Nodes `[1] -> [2] -> [3] (False) -> [5] (data is valid) -> [6]`.
+  - *Trigger*: Database resolves history records, and `data` resolves to a valid array of `ChatMessage[]`.
+  - *Metrics*: Sc = 83.3% (5/6 nodes), Dc = 50.0% (2/4 outcomes: `historyError` = False, nullish check = False), Pc = 33.3% (1/3 paths).
+- **Path 3 (Database Query Succeeds - Null/Empty Data Fallback)**: Nodes `[1] -> [2] -> [3] (False) -> [5] (data is null) -> [6]`.
+  - *Trigger*: Database call succeeds, but the target thread has no messages, resulting in a null `data` field which is coalesced to `[]`.
+  - *Metrics*: Sc = 83.3% (5/6 nodes), Dc = 50.0% (2/4 outcomes: `historyError` = False, nullish check = True), Pc = 33.3% (1/3 paths).
+* **Condition Coverage (Cc) Verification**:
+  - `historyError`: Evaluated as True (Path 1) and False (Paths 2, 3).
+  - Nullish coalescing `data` check: Evaluated as Present (Path 2) and Null (Path 3).
 
 ---
 
-**4. `useEffect` — Thread Initialization Effect**
+#### 3. `handleSend()` — Send Chat Message
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc), Condition Coverage (Cc)
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All nodes 1–4 executed across the test suite)
-  - **Decision Coverage (Dc):** **100.0%** (Both outcomes of the guard decision evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (Both execution paths exercised)
-  - **Condition Coverage (Cc):** **100.0%** (All 6 Boolean outcomes of the 3 guard sub-clauses evaluated)
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$), Condition Coverage ($C_c$)
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–11 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (All 6 Boolean outcomes of the 3 decisions evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 5 unique execution paths exercised)
+  - **Condition Coverage (Cc)**: **100.0%** (All conditions evaluated to True and False)
 
-* **Statement Coverage (Sc):** Ensures setup and execution statements run, including the guard, mount flag assignment, calling `loadThread()`, and unmount cleanup setting `isMounted = false`.
-* **Decision Coverage (Dc):** Focuses on the guard decision outcome `if (!bookingId || isLoading || !user)`.
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Validates the two execution paths:
-  - **Path 1 (Guard fails/Preconditions unmet):** Covers **25.0% Sc** (Node 1), **50.0% Dc** (guard = T), **50.0% Pc**, and up to **50.0% Cc** (depending on which clause triggers early return).
-  - **Path 2 (Guard passes/Init & Unmount):** Covers **100.0% Sc** (Nodes 1, 2, 3, 4), **50.0% Dc** (guard = F), **50.0% Pc**, and **100.0% Cc**.
-* **Condition Coverage (Cc):** Applies to the compound guard condition `if (!bookingId || isLoading || !user)`. Cc requires evaluating each individual logical clause to True and False:
-  - Condition A (`!bookingId`) is True (empty ID) and False.
-  - Condition B (`isLoading`) is True (loading auth) and False.
-  - Condition C (`!user`) is True (no user) and False.
+* **Statement coverage** confirms all instructions execute, covering the boolean state toggles (`setSending`), the payload construction, the database `.insert()` call, and the input reset (`setDraft('')`).
+* **Branch coverage** tests the compound conditional guard `if (!draft.trim() || !user || !thread) return;` to verify that invalid inputs correctly halt execution. It also tests the database exception branch `if (error) throw error;`.
+* **Path coverage** evaluates five critical scenarios: (1) Validation fails due to empty draft → early return. (2) Validation fails due to unauthenticated user → early return. (3) Validation fails due to missing chat thread → early return. (4) Validation passes and database insertion succeeds → draft is cleared and user interface resets. (5) Validation passes and database insertion fails → database error is caught, toast notification fires. All paths verify that the finally block resolves the sending state.
+
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Precondition Guard Fails - Empty Draft)**: Nodes `[1] -> [2] (Condition A = True) -> [3]` (Exit).
+  - *Trigger*: Message input is empty or contains only spaces (`draft.trim() === ''`).
+  - *Metrics*: Sc = 27.3% (3/11 nodes), Dc = 16.7% (1/6 outcomes: Guard = True), Pc = 20.0% (1/5 paths), Cc = 12.5% (1/8 condition values).
+- **Path 2 (Precondition Guard Fails - Unauthenticated User)**: Nodes `[1] -> [2] (Condition A = False, Condition B = True) -> [3]` (Exit).
+  - *Trigger*: Draft is populated, but current session user context is missing (`!user`).
+  - *Metrics*: Sc = 27.3% (3/11 nodes), Dc = 16.7% (1/6 outcomes: Guard = True), Pc = 20.0% (1/5 paths), Cc = 25.0% (2/8 condition values).
+- **Path 3 (Precondition Guard Fails - Missing Chat Thread)**: Nodes `[1] -> [2] (Condition A = False, Condition B = False, Condition C = True) -> [3]` (Exit).
+  - *Trigger*: Draft and user are active, but no thread exists (`!thread`).
+  - *Metrics*: Sc = 27.3% (3/11 nodes), Dc = 16.7% (1/6 outcomes: Guard = True), Pc = 20.0% (1/5 paths), Cc = 37.5% (3/8 condition values).
+- **Path 4 (Successful Send & State Reset)**: Nodes `[1] -> [2] (All False) -> [4] -> [5] -> [6] -> [7] (False) -> [8] -> [10] -> [11]`.
+  - *Trigger*: Preconditions met, payload inserts to `chat_messages` without error, drafting field is cleared, and loading state resets in `finally`.
+  - *Metrics*: Sc = 81.8% (9/11 nodes), Dc = 50.0% (3/6 outcomes: Guard = False, `error` = False), Pc = 20.0% (1/5 paths), Cc = 100.0% (8/8 condition values).
+- **Path 5 (Database Insertion Fails - Caught & Handled)**: Nodes `[1] -> [2] (All False) -> [4] -> [5] -> [6] -> [7] (True) -> [9] -> [10] -> [11]`.
+  - *Trigger*: Database insert returns an error, triggering the `catch` block to show a toast, and then resetting `sending` to false in `finally`.
+  - *Metrics*: Sc = 90.9% (10/11 nodes), Dc = 66.7% (4/6 outcomes: Guard = False, `error` = True, Toast message fallback evaluated), Pc = 20.0% (1/5 paths), Cc = 100.0%.
+* **Condition Coverage (Cc) Verification**:
+  - `!draft.trim()`: Evaluated as True (Path 1) and False (Paths 2, 3, 4, 5).
+  - `!user`: Evaluated as True (Path 2) and False (Paths 3, 4, 5).
+  - `!thread`: Evaluated as True (Path 3) and False (Paths 4, 5).
+  - `error`: Evaluated as True (Path 5) and False (Path 4).
 
 ---
 
 ### Feature 2: Real-time Seat Availability (`LiveSeatLoad.tsx`)
 
-**5. `fetchSeatCounts()` — Query Raw Seats Table**
+#### 4. `fetchSeatCounts()` — Query Raw Seats Table
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc), Condition Coverage (Cc)
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All nodes 1–5 executed across the test suite)
-  - **Decision Coverage (Dc):** **100.0%** (Both outcomes of guard evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (Both paths executed)
-  - **Condition Coverage (Cc):** **100.0%** (All 6 outcomes of `error`, `!isMounted`, and `!seats` evaluated)
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$), Condition Coverage ($C_c$)
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–10 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (Both outcomes of the guard decision evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 4 unique execution paths exercised)
+  - **Condition Coverage (Cc)**: **100.0%** (All conditions evaluated to True and False)
 
-* **Statement Coverage (Sc):** Ensures the Supabase seats query executes, followed by type casting, array filtering (for booked/locked seats), available count math, and state updates.
-* **Decision Coverage (Dc):** Focuses on evaluating the True and False outcomes of the guard:
-  - `if (error || !isMounted || !seats)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Tests both execution paths:
-  - **Path 1 (Preconditions unmet/early return):** Covers **40.0% Sc** (Nodes 1, 2), **50.0% Dc** (guard = T), **50.0% Pc**, and up to **50.0% Cc** (depending on which clause triggers it).
-  - **Path 2 (Successful Calculation):** Covers **100.0% Sc** (Nodes 1, 2, 3, 4, 5), **50.0% Dc** (guard = F), **50.0% Pc**, and **100.0% Cc**.
-* **Condition Coverage (Cc):** Applies to the compound guard `if (error || !isMounted || !seats)`. Cc requires evaluating all three logical sub-expressions to both True and False:
-  - Condition A (`error`) is True and False.
-  - Condition B (`!isMounted`) is True and False.
-  - Condition C (`!seats`) is True and False.
+* **Statement coverage** confirms all instructions execute, covering the database query to the `seats` table, the early return check, array filters for seat statuses (`'booked'`, `'locked'`), count calculations, and the state dispatch via `setMetrics`.
+* **Branch coverage** evaluates the compound guard `if (error || !isMounted || !seats)` to confirm that any query failure, component unmounting, or empty dataset results in an immediate exit.
+* **Path coverage** exercises four critical scenarios: (1) Database query fails → returns early. (2) Component has unmounted during flight → returns early. (3) Database query returns null/empty dataset → returns early. (4) Query succeeds while mounted → filters booked and locked statuses, calculates available counts, and updates metrics state.
 
----
-
-**6. `fetchMetrics()` — Query Aggregated Metrics**
-
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc), Condition Coverage (Cc)
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All nodes 1–4 executed across the test suite)
-  - **Decision Coverage (Dc):** **100.0%** (Both outcomes of success check evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (Both paths executed)
-  - **Condition Coverage (Cc):** **100.0%** (All 6 outcomes of `!error`, `data`, and `isMounted` evaluated)
-
-* **Statement Coverage (Sc):** Ensures execution of the aggregate query, `setMetrics` call, and the fallback invocation of `fetchSeatCounts()`.
-* **Decision Coverage (Dc):** Evaluates the True and False branches of the decision:
-  - `if (!error && data && isMounted)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Validates the execution paths:
-  - **Path 1 (Query succeeds & sets metrics):** Covers **75.0% Sc** (Nodes 1, 2, 3), **50.0% Dc** (guard = T), **50.0% Pc**, and **100.0% Cc**.
-  - **Path 2 (Query fails / fallback triggered):** Covers **50.0% Sc** (Nodes 1, 2, 4), **50.0% Dc** (guard = F), **50.0% Pc**, and up to **50.0% Cc** (depending on query result).
-* **Condition Coverage (Cc):** Applies to the compound check `if (!error && data && isMounted)`. Cc requires evaluating the individual conditions to True and False:
-  - Condition A (`!error`) is True and False.
-  - Condition B (`data`) is True and False.
-  - Condition C (`isMounted`) is True and False.
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Query Fails - Guard Early Return)**: Nodes `[1] -> [2] -> [3] (Condition A = True) -> [4]` (Exit).
+  - *Trigger*: Database call to `seats` table fails with an error payload.
+  - *Metrics*: Sc = 40.0% (4/10 nodes), Dc = 50.0% (1/2 outcomes: Guard = True), Pc = 25.0% (1/4 paths), Cc = 16.7% (1/6 condition values).
+- **Path 2 (Component Unmounted - Guard Early Return)**: Nodes `[1] -> [2] -> [3] (Condition A = False, Condition B = True) -> [4]` (Exit).
+  - *Trigger*: Query resolves, but component has unmounted during flight (`isMounted === false`).
+  - *Metrics*: Sc = 40.0% (4/10 nodes), Dc = 50.0% (1/2 outcomes: Guard = True), Pc = 25.0% (1/4 paths), Cc = 33.3% (2/6 condition values).
+- **Path 3 (Database Query Returns Empty - Guard Early Return)**: Nodes `[1] -> [2] -> [3] (Condition A = False, Condition B = False, Condition C = True) -> [4]` (Exit).
+  - *Trigger*: Database returns a null dataset for `seats` (`seats` is nullish).
+  - *Metrics*: Sc = 40.0% (4/10 nodes), Dc = 50.0% (1/2 outcomes: Guard = True), Pc = 25.0% (1/4 paths), Cc = 50.0% (3/6 condition values).
+- **Path 4 (Successful Calculations & Metrics Dispatched)**: Nodes `[1] -> [2] -> [3] (All False) -> [5] -> [6] -> [7] -> [8] -> [9] -> [10]`.
+  - *Trigger*: Successful data resolution; filters status counts and computes available slots (using `Math.max` to handle potential negative numbers) and dispatches them.
+  - *Metrics*: Sc = 90.0% (9/10 nodes), Dc = 50.0% (1/2 outcomes: Guard = False), Pc = 25.0% (1/4 paths), Cc = 100.0% (6/6 condition values).
+* **Condition Coverage (Cc) Verification**:
+  - `error`: Evaluated as True (Path 1) and False (Paths 2, 3, 4).
+  - `!isMounted`: Evaluated as True (Path 2) and False (Paths 3, 4).
+  - `!seats`: Evaluated as True (Path 3) and False (Path 4).
 
 ---
 
-**7. `useEffect` — Dual-Table Realtime Subscription**
+#### 5. `fetchMetrics()` — Query Aggregated Metrics
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc)
-* *Condition Coverage (Cc) is **Not Applicable** as there are no compound Boolean expressions.*
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All subscription setup, callbacks, and cleanups executed)
-  - **Decision Coverage (Dc):** **100.0%** (Both outcomes of payload check evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 4 unique execution paths exercised)
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$), Condition Coverage ($C_c$)
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–7 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (Both outcomes of the decision evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 4 unique execution paths exercised)
+  - **Condition Coverage (Cc)**: **100.0%** (All conditions evaluated to True and False)
 
-* **Statement Coverage (Sc):** Verifies the subscription lifecycle, including mounted flag setup, initial `fetchMetrics()` call, channel setup, registering both table callbacks, and cleanup.
-* **Decision Coverage (Dc):** Evaluates outcomes of the payload check inside the `schedule_metrics` callback:
-  - `if (payload.new)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Verifies different execution paths:
-  - **Path 1 (Metric changes with payload):** Covers **66.7% Sc** (Nodes 1, 2, 3, 4), **50.0% Dc** (payload check = T), and **25.0% Pc** (1/4 paths).
-  - **Path 2 (Metric changes without payload):** Covers **50.0% Sc** (Nodes 1, 2, 3), **50.0% Dc** (payload check = F), and **25.0% Pc** (1/4 paths).
-  - **Path 3 (Seat status change):** Covers **66.7% Sc** (Nodes 1, 2, 5), **0.0% Dc**, and **25.0% Pc** (1/4 paths).
-  - **Path 4 (Component Unmounts):** Covers **33.3% Sc** (Node 6 cleanup), **0.0% Dc**, and **25.0% Pc** (1/4 paths).
+* **Statement coverage** confirms all instructions execute, covering the database fetch for aggregated `schedule_metrics`, status condition checks, state updates via `setMetrics`, and the fallback invocation of `fetchSeatCounts()`.
+* **Branch coverage** tests the compound success condition `if (!error && data && isMounted)` to verify that cached metrics are set on a clean match, and that any failure triggers the raw recounting process.
+* **Path coverage** exercises four operational scenarios: (1) Cache hit (aggregated metrics found and component is mounted) → state updated and returns early. (2) Database query fails → triggers fallback recount. (3) Cache miss (no matching aggregated metrics row exists) → triggers fallback recount. (4) Component is unmounted during query flight → triggers fallback recount.
 
----
-
-**8. Occupancy Computation & Render Logic**
-
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc)
-* *Condition Coverage (Cc) is **Not Applicable** as there are no compound Boolean expressions.*
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All execution steps and render statements executed)
-  - **Decision Coverage (Dc):** **100.0%** (All 4 Boolean outcomes of the division guard and conditional render evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (Both execution paths exercised)
-
-* **Statement Coverage (Sc):** Ensures variables (`total`, `occupied`, `percent`) are calculated and render elements (progress bar, labels, texts) execute.
-* **Decision Coverage (Dc):** Evaluates True and False outcomes for decisions:
-  - Ternary division guard: `total > 0`
-  - Conditional progress bar render: `if (total > 0)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Validates the distinct rendering flows:
-  - **Path 1 (Metrics empty/Total zero):** Covers **60.0% Sc** (Nodes 1, 2, 3, 5), **50.0% Dc** (ternary = F, render guard = F), and **50.0% Pc** (1/2 paths).
-  - **Path 2 (Valid metrics/Total > 0):** Covers **100.0% Sc** (Nodes 1, 2, 3, 4, 5), **50.0% Dc** (ternary = T, render guard = T), and **50.0% Pc** (1/2 paths).
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Aggregate Metrics Hit - Returns Early)**: Nodes `[1] -> [2] -> [3] (All True) -> [4] -> [5]` (Exit).
+  - *Trigger*: Pre-computed `schedule_metrics` row is found, no error, component is mounted; state is set, bypassing recount query.
+  - *Metrics*: Sc = 71.4% (5/7 nodes), Dc = 50.0% (1/2 outcomes: Guard = True), Pc = 25.0% (1/4 paths), Cc = 50.0% (3/6 condition values).
+- **Path 2 (Database Error - Recount Fallback)**: Nodes `[1] -> [2] -> [3] (Condition A = False) -> [6] -> [7]`.
+  - *Trigger*: Aggregate metrics fetch fails, initiating fallback raw recount.
+  - *Metrics*: Sc = 71.4% (5/7 nodes), Dc = 50.0% (1/2 outcomes: Guard = False), Pc = 25.0% (1/4 paths), Cc = 16.7% (1/6 condition values).
+- **Path 3 (Aggregate Cache Miss - Recount Fallback)**: Nodes `[1] -> [2] -> [3] (Condition A = True, Condition B = False) -> [6] -> [7]`.
+  - *Trigger*: Query resolves without error, but no matching aggregated row exists (`data` is null).
+  - *Metrics*: Sc = 71.4% (5/7 nodes), Dc = 50.0% (1/2 outcomes: Guard = False), Pc = 25.0% (1/4 paths), Cc = 33.3% (2/6 condition values).
+- **Path 4 (Component Unmounted - Recount Fallback)**: Nodes `[1] -> [2] -> [3] (Condition A = True, Condition B = True, Condition C = False) -> [6] -> [7]`.
+  - *Trigger*: Aggregated query resolves, but component has unmounted (`isMounted` is false).
+  - *Metrics*: Sc = 71.4% (5/7 nodes), Dc = 50.0% (1/2 outcomes: Guard = False), Pc = 25.0% (1/4 paths), Cc = 50.0% (3/6 condition values).
+* **Condition Coverage (Cc) Verification**:
+  - `!error`: Evaluated as True (Paths 1, 3, 4) and False (Path 2).
+  - `data`: Evaluated as True (Paths 1, 4) and False (Path 3).
+  - `isMounted`: Evaluated as True (Path 1) and False (Path 4).
 
 ---
 
-### Feature 3: Real-time Schedule & ETA Updates (`ScheduleUpdatesPanel.tsx`)
+#### 6. `useEffect` — Dual-Table Realtime Subscription
 
-**9. `formatTime()` — Format ISO Timestamps**
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$)
+* *Condition Coverage ($C_c$) is **Not Applicable** since no compound logical expressions are present in decisions.*
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–9 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (Both outcomes of the payload check evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 4 unique execution paths exercised)
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc)
-* *Condition Coverage (Cc) is **Not Applicable** as there are no compound Boolean expressions.*
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All lines and catch blocks executed)
-  - **Decision Coverage (Dc):** **100.0%** (Both outcomes of the null check evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 3 unique execution paths exercised)
+* **Statement coverage** confirms all instructions execute, covering the initial state initialization (`isMounted = true`), the `fetchMetrics()` query call, WebSocket channel subscription setup, registering `schedule_metrics` and `seats` event listeners, and the unmount cleanup handler.
+* **Branch coverage** tests the payload condition `if (payload.new)` in the aggregated table subscriber to ensure state is updated only when new metrics are received.
+* **Path coverage** exercises four scenarios: (1) Effect initialization and unmount cleanup. (2) Metric change event with new payload. (3) Metric change event with null payload. (4) Raw seat update event triggering recalculation.
 
-* **Statement Coverage (Sc):** Ensures the execution of the null check, time parsing, local string formatting, and the catch block returning the raw ISO.
-* **Decision Coverage (Dc):** Evaluates the True and False outcomes of the guard:
-  - `if (!iso)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Validates all paths:
-  - **Path 1 (Null/Undefined Input):** Covers **40.0% Sc** (Nodes 1, 2), **50.0% Dc** (guard = T), and **33.3% Pc** (1/3 paths).
-  - **Path 2 (Valid ISO String):** Covers **80.0% Sc** (Nodes 1, 3, 4), **50.0% Dc** (guard = F), and **33.3% Pc** (1/3 paths).
-  - **Path 3 (Malformed ISO String):** Covers **80.0% Sc** (Nodes 1, 3, 5), **50.0% Dc** (guard = F), and **33.3% Pc** (1/3 paths).
-
----
-
-**10. `load()` — Fetch Schedule Updates**
-
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc), Condition Coverage (Cc)
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All nodes 1–5 executed across the test suite)
-  - **Decision Coverage (Dc):** **100.0%** (All 4 Boolean outcomes of success check and loading reset check evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 4 unique execution paths exercised)
-  - **Condition Coverage (Cc):** **100.0%** (All 4 Boolean outcomes of `!error` and `isMounted` evaluated)
-
-* **Statement Coverage (Sc):** Ensures loading states are updated, Supabase queries execute with filters and limits, updates are set, and loading resets.
-* **Decision Coverage (Dc):** Evaluates outcomes of the decisions:
-  - `if (!error && isMounted)`
-  - `if (isMounted)` (loading state reset)
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Validates the execution paths:
-  - **Path 1 (Query Success & Mounted):** Covers **80.0% Sc** (Nodes 1, 2, 3, 4, 5), **50.0% Dc** (success check = T, loading check = T), **25.0% Pc** (1/4 paths), and **100.0% Cc**.
-  - **Path 2 (Query Failure & Mounted):** Covers **80.0% Sc** (Nodes 1, 2, 3, 5), **50.0% Dc** (success check = F, loading check = T), **25.0% Pc** (1/4 paths), and **25.0% Cc** (`!error` = F).
-  - **Path 3 (Query Success & Unmounted):** Covers **40.0% Sc** (Nodes 1, 2), **50.0% Dc** (success check = F, loading check = F), **25.0% Pc** (1/4 paths), and **25.0% Cc** (`isMounted` = F).
-  - **Path 4 (Empty Array Returned):** Covers **80.0% Sc** (Nodes 1, 2, 3, 4, 5), **50.0% Dc** (success check = T, loading check = T), **25.0% Pc** (1/4 paths), and **100.0% Cc**.
-* **Condition Coverage (Cc):** Applies to the compound condition `if (!error && isMounted)`. Cc requires evaluating both conditions to True and False:
-  - Condition A (`!error`) is True and False.
-  - Condition B (`isMounted`) is True and False.
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Hook Initialization & Unmount Cleanup)**: Nodes `[1] -> [2] -> [3] -> [4] -> [7] -> [9]`.
+  - *Trigger*: Hook mounts, invokes initial fetch, registers channel subscriptions, and registers a cleanup handler.
+  - *Metrics*: Sc = 66.7% (6/9 nodes), Dc = 0.0% (No decisions evaluated), Pc = 25.0% (1/4 paths).
+- **Path 2 (schedule_metrics Event with Valid Payload)**: Callback from Node 4/7 -> `[5] (True) -> [6]`.
+  - *Trigger*: PostgreSQL updates the aggregated `schedule_metrics` table; payload arrives on the WebSocket channel and updates metrics state.
+  - *Metrics*: Sc = 88.9% (8/9 nodes), Dc = 50.0% (1/2 outcomes: `payload.new` = True), Pc = 25.0% (1/4 paths).
+- **Path 3 (schedule_metrics Event with Null Payload)**: Callback from Node 4/7 -> `[5] (False) ->` (Exit callback).
+  - *Trigger*: PostgreSQL updates `schedule_metrics`, but no new state row is broadcast (`payload.new` is null).
+  - *Metrics*: Sc = 77.8% (7/9 nodes), Dc = 50.0% (1/2 outcomes: `payload.new` = False), Pc = 25.0% (1/4 paths).
+- **Path 4 (seats Event - Recount Fallback)**: Callback from Node 7 -> `[8]`.
+  - *Trigger*: PostgreSQL updates individual rows in the `seats` table, triggering a client-side recount.
+  - *Metrics*: Sc = 77.8% (7/9 nodes), Dc = 0.0% (No decisions on this branch), Pc = 25.0% (1/4 paths).
 
 ---
 
-**11. `useEffect` — Realtime Subscription**
+#### 7. `computeSeatOccupancy()` — Occupancy Computation & Render Logic
 
-* **Applicable Coverage Metrics:** Statement Coverage (Sc)
-* *Decision Coverage (Dc), Path (branch) Coverage (Pc), and Condition Coverage (Cc) are **Not Applicable** since the subscription setup, callbacks, and cleanups execute unconditionally without branching code.*
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All setup, subscribe, and cleanup statements executed)
+* **Applicable Coverage Metrics**: Statement Coverage ($S_c$), Decision Coverage ($D_c$), Path (branch) Coverage ($P_c$)
+* *Condition Coverage ($C_c$) is **Not Applicable** since no compound logical expressions are present in decisions.*
+* **Overall Target Suite Coverage**:
+  - **Statement Coverage (Sc)**: **100.0%** (All nodes 1–8 executed)
+  - **Decision Coverage (Dc)**: **100.0%** (All 4 Boolean outcomes of the 2 decisions evaluated)
+  - **Path (branch) Coverage (Pc)**: **100.0%** (All 3 unique execution paths exercised)
 
-* **Statement Coverage (Sc):** Ensures initial database pull via `load()`, channel instantiation, INSERT listener registration, subscription execution, and unmount channel removal are executed.
+* **Statement coverage** confirms all instructions execute, covering the null check guard, total seat extraction, occupied sum (booked + locked), percentage logic, and the return block.
+* **Branch coverage** evaluates the guard check `if (!metrics)` and the ternary division-by-zero check `total > 0` to ensure safe occupancy calculation.
+* **Path coverage** verifies three computation scenarios: (1) Metrics object is null → returns zeroed occupancy. (2) Valid metrics with total seats > 0 → computes occupancy percent. (3) Valid metrics but total seats is 0 → returns occupancy with 0% to avoid division-by-zero.
 
----
-
-**12. Status Display & Conditional Render Logic**
-
-* **Applicable Coverage Metrics:** Statement Coverage (Sc), Decision Coverage (Dc), Path (branch) Coverage (Pc)
-* *Condition Coverage (Cc) is **Not Applicable** as there are no compound Boolean expressions.*
-* **Overall Target Suite Coverage:**
-  - **Statement Coverage (Sc):** **100.0%** (All display cases, formatting fallbacks, and layout renders executed)
-  - **Decision Coverage (Dc):** **100.0%** (All 4 Boolean outcomes of delay and message checks evaluated)
-  - **Path (branch) Coverage (Pc):** **100.0%** (All 5 unique render paths exercised)
-
-* **Statement Coverage (Sc):** Ensures rendering statements execute, including extracting the latest status, formatting ETA times, mapping updates to the timeline, and conditionally rendering warnings and messages.
-* **Decision Coverage (Dc):** Evaluates both True and False outcomes for each separate conditional render decision:
-  - `if (latest?.delay_minutes)`
-  - `if (latest?.message)`
-* **Path (branch) Coverage (Pc) & Test Case Percentages:** Exercises all independent combinations of the optional display features:
-  - **Path 1 (No updates present):** Covers **42.9% Sc** (Nodes 1, 2, 3, 5, 7), **50.0% Dc** (delay check = F, message check = F), and **20.0% Pc** (1/5 paths).
-  - **Path 2 (Delay & Message present):** Covers **100.0% Sc** (Nodes 1, 2, 3, 4, 5, 6, 7), **100.0% Dc** (delay check = T, message check = T), and **20.0% Pc** (1/5 paths).
-  - **Path 3 (Delay present, Message absent):** Covers **71.4% Sc** (Nodes 1, 2, 3, 4, 5, 7), **50.0% Dc** (delay check = T, message check = F), and **20.0% Pc** (1/5 paths).
-  - **Path 4 (Delay absent, Message present):** Covers **71.4% Sc** (Nodes 1, 2, 3, 5, 6, 7), **50.0% Dc** (delay check = F, message check = T), and **20.0% Pc** (1/5 paths).
-  - **Path 5 (Delay absent, Message absent):** Covers **57.1% Sc** (Nodes 1, 2, 3, 5, 7), **50.0% Dc** (delay check = F, message check = F), and **20.0% Pc** (1/5 paths).
+##### Detailed Coverage Paths & Scenarios:
+- **Path 1 (Precondition Fails - Metrics is Null)**: Nodes `[1] -> [2] (True) -> [3]` (Exit).
+  - *Trigger*: The input parameter `metrics` is null or undefined.
+  - *Metrics*: Sc = 37.5% (3/8 nodes), Dc = 25.0% (1/4 outcomes: `!metrics` = True), Pc = 33.3% (1/3 paths).
+- **Path 2 (Successful Calculation - Active Seat Capacity)**: Nodes `[1] -> [2] (False) -> [4] -> [5] -> [6] (Ternary = True) -> [7] -> [8]`.
+  - *Trigger*: Metrics are resolved and total seats is greater than zero (`metrics.total_seats > 0`).
+  - *Metrics*: Sc = 87.5% (7/8 nodes), Dc = 50.0% (2/4 outcomes: `!metrics` = False, `total > 0` = True), Pc = 33.3% (1/3 paths).
+- **Path 3 (Successful Calculation - Empty/Zero Seat Capacity)**: Nodes `[1] -> [2] (False) -> [4] -> [5] -> [6] (Ternary = False) -> [7] -> [8]`.
+  - *Trigger*: Metrics are resolved, but total capacity is zero (`metrics.total_seats === 0`), returning a default percentage of zero (protecting against Division by Zero).
+  - *Metrics*: Sc = 87.5% (7/8 nodes), Dc = 50.0% (2/4 outcomes: `!metrics` = False, `total > 0` = False), Pc = 33.3% (1/3 paths).
 
 ---
 
@@ -873,18 +829,13 @@ Below is a consolidated summary of which structural coverage metrics are applica
 
 | Function / Logic Block | Statement Coverage (Sc) | Decision Coverage (Dc) | Path (branch) Coverage (Pc) | Condition Coverage (Cc) | Primary Rationale / Notes |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **`loadThread()`** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Has nested logic, multiple DB queries, and compound check `!operatorId \|\| !clientId`. |
+| **`useEffect` (Subscription)** | **100.0%** | **100.0%** | **100.0%** | *N/A* | Simple guards (`!thread`, duplicate ID check); no compound conditions. |
+| **`loadMessageHistory()`** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Single query check with nullish coalescing `data ?? []` path branching. |
 | **`handleSend()`** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Contains multi-clause guard `!draft.trim() \|\| !user \|\| !thread`. |
-| **`useEffect`** (Realtime Message Sub) | **100.0%** | **100.0%** | **100.0%** | *N/A* | Simple guards (`!thread`, duplicate ID check); no compound Boolean conditions. |
-| **`useEffect`** (Thread Init) | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Contains compound guard condition `!bookingId \|\| isLoading \|\| !user`. |
 | **`fetchSeatCounts()`** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Contains compound guard condition `error \|\| !isMounted \|\| !seats`. |
 | **`fetchMetrics()`** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Contains compound success decision `!error && data && isMounted`. |
-| **`useEffect`** (Dual-Table Sub) | **100.0%** | **100.0%** | **100.0%** | *N/A* | Multiple async event triggers, but only simple payload check (`payload.new`). |
-| **Occupancy Render Logic** | **100.0%** | **100.0%** | **100.0%** | *N/A* | Single-condition check `total > 0` for division and rendering; no compound conditions. |
-| **`formatTime()`** | **100.0%** | **100.0%** | **100.0%** | *N/A* | Error/null guard check and try/catch block; no compound conditions. |
-| **`load()`** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | Contains compound success check `!error && isMounted`. |
-| **`useEffect`** (Realtime Schedule Sub) | **100.0%** | *N/A* | *N/A* | *N/A* | Entire subscription logic and callback execute unconditionally; no decisions. |
-| **Status Render Logic** | **100.0%** | **100.0%** | **100.0%** | *N/A* | Multiple simple render decisions (`delay_minutes`, `message`) mapped sequentially. |
+| **`useEffect` (Dual-Table Sub)** | **100.0%** | **100.0%** | **100.0%** | *N/A* | Multiple async event triggers, but only simple payload check (`payload.new`). |
+| **`computeSeatOccupancy()`** | **100.0%** | **100.0%** | **100.0%** | *N/A* | Null check guard and ternary division guard `total > 0`; no compound conditions. |
 
 ---
 
@@ -892,9 +843,8 @@ Below is a consolidated summary of which structural coverage metrics are applica
 
 | Feature | Component | Functions Analyzed | Supabase Channel | DB Tables |
 |---|---|---|---|---|
-| Real-time Messaging | `ChatPanel.tsx` | `loadThread()`, `handleSend()`, Realtime Subscription, Thread Init Effect | `chat_thread_{id}` | `chat_threads`, `chat_messages` |
-| Real-time Seat Availability | `LiveSeatLoad.tsx` | `fetchSeatCounts()`, `fetchMetrics()`, Dual-Table Subscription, Occupancy Render | `live_seat_load_{id}` | `schedule_metrics`, `seats` |
-| Real-time Schedule Updates | `ScheduleUpdatesPanel.tsx` | `formatTime()`, `load()`, Realtime Subscription, Status Render | `schedule_updates_{id}` | `schedule_updates` |
+| Real-time Messaging | `ChatPanel.tsx` | `useEffect` Realtime Subscription, `loadMessageHistory()`, `handleSend()` | `chat_thread_{id}` | `chat_messages` |
+| Real-time Seat Availability | `LiveSeatLoad.tsx` | `fetchSeatCounts()`, `fetchMetrics()`, `useEffect` Dual-Table Subscription, `computeSeatOccupancy()` | `live_seat_load_{id}` | `schedule_metrics`, `seats` |
 
 ---
 
