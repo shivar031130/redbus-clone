@@ -36,6 +36,7 @@ export function ChatPanel({ bookingId, className }: ChatPanelProps) {
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [passengerName, setPassengerName] = useState<string>('Passenger');
   const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -99,6 +100,33 @@ export function ChatPanel({ bookingId, className }: ChatPanelProps) {
         const history = await loadMessageHistory(resolvedThread.id);
         if (!isMounted) return;
         setMessages(history);
+
+        // Fetch passenger name
+        let resolvedPassengerName = 'Passenger';
+        const { data: passengers, error: passengersError } = await supabase
+          .from('booking_passengers')
+          .select('passenger_name')
+          .eq('booking_id', bookingId)
+          .limit(1);
+
+        if (!isMounted) return;
+
+        if (!passengersError && passengers && passengers.length > 0) {
+          resolvedPassengerName = passengers[0].passenger_name;
+        } else {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', resolvedThread.client_id)
+            .single();
+          if (!isMounted) return;
+          if (profileData) {
+            resolvedPassengerName = profileData.full_name || profileData.email.split('@')[0] || 'Passenger';
+          }
+        }
+        if (isMounted) {
+          setPassengerName(resolvedPassengerName);
+        }
       } catch (err: any) {
         if (isMounted) {
           toast.error(err.message || 'Failed to load chat.');
@@ -189,6 +217,10 @@ export function ChatPanel({ bookingId, className }: ChatPanelProps) {
         ) : (
           messages.map((message) => {
             const isMine = message.sender_id === user.id;
+            const isClientSender = thread ? message.sender_id === thread.client_id : false;
+            const label = isClientSender
+              ? (isMine ? 'You' : passengerName)
+              : 'Operator';
             return (
               <div
                 key={message.id}
@@ -200,7 +232,7 @@ export function ChatPanel({ bookingId, className }: ChatPanelProps) {
                 )}
               >
                 <div className="text-[10px] uppercase tracking-wider opacity-70 mb-1">
-                  {isMine ? 'You' : 'Operator'}
+                  {label}
                 </div>
                 <div>{message.body}</div>
               </div>

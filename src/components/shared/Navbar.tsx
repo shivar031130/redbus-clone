@@ -1,18 +1,18 @@
 'use client';
 
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/lib/store';
-import { Bus, User, LogOut, Menu, Settings } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuthStore } from '@/lib/store';
+import { createClient } from '@/lib/supabase/client';
+import { Bus, LogOut, Menu, Settings, User } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export function Navbar() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export function Navbar() {
               <div className="bg-primary p-2 rounded-lg group-hover:bg-primary/90 transition-colors">
                 <Bus className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground tracking-tight">BusSphere</span>
+              <span className="text-xl font-bold text-foreground tracking-tight">redBus</span>
             </Link>
           </div>
 
@@ -54,7 +54,7 @@ export function Navbar() {
             <Link href="/search" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               Find Tickets
             </Link>
-            
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="gap-2 rounded-full pl-2 pr-4 border hover:bg-muted flex items-center justify-center h-10 transition-colors cursor-pointer outline-none focus:outline-none">
@@ -94,14 +94,14 @@ export function Navbar() {
               </DropdownMenu>
             ) : !isLoading ? (
               <div className="flex items-center gap-3">
-                <Link 
-                  href="/login" 
+                <Link
+                  href="/login"
                   className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
                 >
                   Log in
                 </Link>
-                <Link 
-                  href="/register" 
+                <Link
+                  href="/register"
                   className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 py-2 rounded-full"
                 >
                   Sign up

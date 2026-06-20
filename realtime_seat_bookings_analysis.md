@@ -1,6 +1,6 @@
 # Real-time Seat Occupancy & Booking — Static Code & Control Flow Analysis
 
-This document presents a detailed static analysis of four critical functions in the BusSphere Malaysia Real-time Seat Booking and Occupancy tracking module (`LiveSeatLoad.tsx`). It provides code segmentations into numbered execution nodes, structural control flow mapping tables, and embeds their corresponding high-fidelity Control Flow Graphs (CFGs).
+This document presents a detailed static analysis of four critical functions in the redBusMalaysia Real-time Seat Booking and Occupancy tracking module (`LiveSeatLoad.tsx`). It provides code segmentations into numbered execution nodes, structural control flow mapping tables, and embeds their corresponding high-fidelity Control Flow Graphs (CFGs).
 
 ---
 

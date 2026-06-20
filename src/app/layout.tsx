@@ -1,9 +1,9 @@
+import { AiAssistantChatbot } from "@/components/shared/AiAssistantChatbot";
 import { AuthErrorNotifier } from "@/components/shared/AuthErrorNotifier";
 import { AuthProvider } from "@/components/shared/AuthProvider";
 import { Footer } from "@/components/shared/Footer";
 import { Navbar } from "@/components/shared/Navbar";
 import { Toaster } from "@/components/ui/sonner";
-import { AiAssistantChatbot } from "@/components/shared/AiAssistantChatbot";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BusSphere Malaysia",
+  title: "redBusMalaysia",
   description: "Modern Malaysian bus ticket booking platform",
 };
 

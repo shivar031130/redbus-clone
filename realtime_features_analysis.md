@@ -1,16 +1,16 @@
-# BusSphere — Real-time Features Analysis
+# redBus— Real-time Features Analysis
 
 ---
 
-## 2.0 New Requirements for BusSphere
+## 2.0 New Requirements for redBus
 
-To enhance BusSphere's bus-booking platform, three new real-time functionalities are proposed to improve user experience and operational efficiency: **real-time messaging**, **real-time seat availability tracking**, and **real-time schedule & ETA updates**. All three features are powered by Supabase Realtime's Postgres Changes mechanism, which broadcasts database row-level events (INSERT, UPDATE, DELETE) to subscribed browser clients over WebSocket channels.
+To enhance redBus's bus-booking platform, three new real-time functionalities are proposed to improve user experience and operational efficiency: **real-time messaging**, **real-time seat availability tracking**, and **real-time schedule & ETA updates**. All three features are powered by Supabase Realtime's Postgres Changes mechanism, which broadcasts database row-level events (INSERT, UPDATE, DELETE) to subscribed browser clients over WebSocket channels.
 
 ---
 
 ## 2.1 Real-time Messaging
 
-This feature addresses the fundamental communication gap that exists in current bus-booking systems. The proposed real-time messaging interface enables instantaneous bidirectional communication between passengers (clients) and bus operators through an integrated chat system within the BusSphere application.
+This feature addresses the fundamental communication gap that exists in current bus-booking systems. The proposed real-time messaging interface enables instantaneous bidirectional communication between passengers (clients) and bus operators through an integrated chat system within the redBusapplication.
 
 It works by processing client text inputs and presenting them directly on the operator's interface, while operator responses are immediately transmitted back to clients. This creates a seamless communication channel that eliminates the need for external communication methods such as phone calls or third-party messaging apps. The system also maintains message continuity by checking for existing conversation threads tied to a specific booking. If no thread exists, the system automatically initializes one by resolving the client and operator identities from the booking record. All message history data is stored persistently in the `chat_messages` table for future reference.
 
@@ -593,7 +593,7 @@ Status Display & Conditional Render
 
 ## 3.1 Structural Coverage
 
-Structural coverage metrics are essential for evaluating the thoroughness and quality of code-level testing. By measuring which parts of the source code are executed during test suites, developers can identify untested execution paths, potential edge cases, and hidden bugs in BusSphere's real-time features. 
+Structural coverage metrics are essential for evaluating the thoroughness and quality of code-level testing. By measuring which parts of the source code are executed during test suites, developers can identify untested execution paths, potential edge cases, and hidden bugs in redBus's real-time features. 
 
 For this analysis, we define and apply the following four primary coverage criteria to each core function:
 - **Statement Coverage (Sc)**: A measure of the percentage of individual statements or lines of code executed during a test.
@@ -825,7 +825,7 @@ For this analysis, we define and apply the following four primary coverage crite
 
 ## Summary of Applicable Coverage Metrics per Function
 
-Below is a consolidated summary of which structural coverage metrics are applicable to each analyzed function and logic block in the BusSphere real-time features, along with target suite coverage percentages:
+Below is a consolidated summary of which structural coverage metrics are applicable to each analyzed function and logic block in the redBusreal-time features, along with target suite coverage percentages:
 
 | Function / Logic Block | Statement Coverage (Sc) | Decision Coverage (Dc) | Path (branch) Coverage (Pc) | Condition Coverage (Cc) | Primary Rationale / Notes |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -850,7 +850,7 @@ Below is a consolidated summary of which structural coverage metrics are applica
 
 ## 4.0 System Timing Requirements
 
-For a highly interactive, real-time application like BusSphere, the synchronization and latency characteristics of Postgres Changes over WebSockets dictate the overall system timing requirements. Below are the three critical aspects of system timing analyzed across the real-time functionalities:
+For a highly interactive, real-time application like redBus, the synchronization and latency characteristics of Postgres Changes over WebSockets dictate the overall system timing requirements. Below are the three critical aspects of system timing analyzed across the real-time functionalities:
 
 ### 1. Response Requirements
 Response timing governs the end-to-end latency of database-to-client propagation. For features like **real-time messaging** and **schedule/ETA updates**, the system must deliver updates from the operator database transaction to the passenger's UI within **500 milliseconds** under normal network loads. This includes Supabase database trigger processing, WebSocket broadcasting, and client-side DOM rendering, ensuring that chat communication and live ETA notifications feel instantaneous and fluid.

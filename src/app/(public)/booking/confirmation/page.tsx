@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useBookingStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,7 +29,6 @@ export default function ConfirmationPage() {
 }
 
 function ConfirmationContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking_id');
   const { clearBooking } = useBookingStore();
@@ -153,7 +153,7 @@ function ConfirmationContent() {
           <Card className="border-none shadow-xl rounded-2xl p-8">
             <h1 className="text-2xl font-bold text-red-600 mb-4">No Booking Found</h1>
             <p className="text-muted-foreground mb-6">
-              We couldn't retrieve any booking details. Please check the URL or return to home.
+              We couldn&apos;t retrieve any booking details. Please check the URL or return to home.
             </p>
             <Button className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white">
               <Link href="/" className="flex items-center justify-center w-full h-full">
@@ -166,7 +166,7 @@ function ConfirmationContent() {
     );
   }
 
-  const departureDate = new Date(booking.schedules?.departure_time || Date.now());
+  const departureDate = new Date(booking.schedules?.departure_time ?? 0);
   const dateString = departureDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeString = departureDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   

@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { Bus } from 'lucide-react';
+import Link from 'next/link';
 
 export function Footer() {
   return (
@@ -11,7 +11,7 @@ export function Footer() {
               <div className="bg-primary p-2 rounded-lg">
                 <Bus className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground tracking-tight">BusSphere</span>
+              <span className="text-xl font-bold text-foreground tracking-tight">redBus</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Premium modern bus ticket booking for Malaysia. Simple, fast, and reliable.
@@ -22,7 +22,7 @@ export function Footer() {
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">IG</Link>
             </div>
           </div>
-          
+
           <div>
             <h3 className="font-semibold mb-4">Bookings</h3>
             <ul className="space-y-3">
@@ -31,7 +31,7 @@ export function Footer() {
               <li><Link href="/promotions" className="text-sm text-muted-foreground hover:text-primary transition-colors">Promotions</Link></li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
@@ -40,7 +40,7 @@ export function Footer() {
               <li><Link href="/operator-join" className="text-sm text-muted-foreground hover:text-primary transition-colors">Partner with Us</Link></li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-semibold mb-4">Support</h3>
             <ul className="space-y-3">
@@ -50,10 +50,10 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} BusSphere Malaysia. All rights reserved.
+            &copy; {new Date().getFullYear()} redBusMalaysia. All rights reserved.
           </p>
           <div className="flex gap-4">
             <span className="text-sm text-muted-foreground">Mock Payment Sandbox Mode</span>

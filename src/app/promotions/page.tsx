@@ -1,5 +1,5 @@
+import { ArrowRight, Clock, Star } from 'lucide-react';
 import Link from 'next/link';
-import { Tag, Clock, ArrowRight, Star } from 'lucide-react';
 
 const promotions = [
   {
@@ -30,7 +30,7 @@ const promotions = [
     id: 3,
     badge: '🎉 New User Offer',
     title: 'RM 5 Off Your First Booking',
-    desc: 'New to BusSphere? Get RM 5 off your very first ticket booking. No minimum spend required.',
+    desc: 'New to redBus? Get RM 5 off your very first ticket booking. No minimum spend required.',
     code: 'NEWUSER5',
     discount: 'RM 5',
     validUntil: '30 Jun 2026',
@@ -59,7 +59,7 @@ export default function PromotionsPage() {
         <div className="max-w-6xl mx-auto px-6 py-20 text-center">
           <h1 className="text-5xl font-bold mb-4">Promotions &amp; Deals</h1>
           <p className="text-white/70 text-xl max-w-xl mx-auto">
-            Exclusive discounts and limited-time offers for BusSphere passengers.
+            Exclusive discounts and limited-time offers for redBuspassengers.
           </p>
         </div>
       </section>

@@ -1,7 +1,7 @@
 'use client';
 
+import { CheckCircle, Clock, Loader2, Mail, MapPin, Phone, Send } from 'lucide-react';
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Clock, Send, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ContactPage() {
@@ -34,7 +34,7 @@ export default function ContactPage() {
         {/* Info Cards */}
         <div className="space-y-6">
           {[
-            { icon: Mail, title: 'Email Support', value: 'support@bussphere.my', sub: 'Response within 24 hours' },
+            { icon: Mail, title: 'Email Support', value: 'support@redBus.my', sub: 'Response within 24 hours' },
             { icon: Phone, title: 'Phone', value: '+60 3-2345 6789', sub: 'Mon–Fri, 8am–8pm' },
             { icon: MapPin, title: 'Headquarters', value: 'Level 12, Menara TM', sub: 'Jalan Pantai Baru, KL' },
             { icon: Clock, title: 'Office Hours', value: 'Mon – Fri: 9am – 6pm', sub: 'Weekends: Online only' },

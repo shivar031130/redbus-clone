@@ -1,6 +1,6 @@
 # Real-time Bus Tracking — Static Code & Control Flow Analysis
 
-This document provides a rigorous static analysis of four critical functions in the BusSphere Malaysia Real-time Tracking codebase. For each function, we segment the source code into numbered execution nodes, provide structural control flow mapping tables, and present their corresponding high-fidelity Control Flow Graphs (CFGs).
+This document provides a rigorous static analysis of four critical functions in the redBusMalaysia Real-time Tracking codebase. For each function, we segment the source code into numbered execution nodes, provide structural control flow mapping tables, and present their corresponding high-fidelity Control Flow Graphs (CFGs).
 
 ---
 

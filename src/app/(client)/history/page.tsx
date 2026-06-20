@@ -4,12 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { useAuthStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase/client';
@@ -80,7 +80,7 @@ export default function BookingHistoryPage() {
 
   const handleDownloadTicket = (booking: Booking) => {
     const content = `
-BusSphere E-Ticket
+redBusE-Ticket
 ==================
 Reference: ${booking.booking_reference}
 Route: ${booking.schedules?.routes?.origin} → ${booking.schedules?.routes?.destination}
@@ -91,7 +91,7 @@ Passengers: ${booking.booking_passengers.map((p) => `${p.passenger_name} – Sea
 Total: RM ${Number(booking.total_amount).toFixed(2)}
 Status: ${booking.status.toUpperCase()}
 ==================
-Thank you for choosing BusSphere!
+Thank you for choosing redBus!
     `.trim();
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);

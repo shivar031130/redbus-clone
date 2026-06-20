@@ -1,13 +1,13 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, ShieldCheck, CalendarCheck, LogOut, User, MapPin } from 'lucide-react';
-import { useAuthStore } from '@/lib/store';
-import { useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/lib/store';
+import { createClient } from '@/lib/supabase/client';
+import { cn } from '@/lib/utils';
+import { CalendarCheck, LayoutDashboard, LogOut, MapPin, ShieldCheck, User, Users } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const sidebarLinks = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="min-w-0">
               <h3 className="font-semibold text-sm">System Admin</h3>
-              <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@bussphere.com'}</p>
+              <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@redBus.com'}</p>
             </div>
           </div>
         </div>

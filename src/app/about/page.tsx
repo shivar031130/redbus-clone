@@ -1,5 +1,5 @@
+import { ArrowRight, Bus, MapPin, ShieldCheck, Star, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Bus, Users, MapPin, ShieldCheck, Star, ArrowRight } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -15,7 +15,7 @@ export default function AboutPage() {
             Connecting Every Corner<br />of <span className="text-blue-300">Malaysia</span>
           </h1>
           <p className="text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
-            BusSphere was built to make inter-city travel simple, transparent, and accessible for every Malaysian — whether you're a daily commuter or a weekend explorer.
+            redBuswas built to make inter-city travel simple, transparent, and accessible for every Malaysian — whether you're a daily commuter or a weekend explorer.
           </p>
         </div>
       </section>
@@ -45,7 +45,7 @@ export default function AboutPage() {
             We believe that buying a bus ticket should be as simple as buying a coffee. No queues, no uncertainty — just seamless travel from point A to point B.
           </p>
           <p className="text-slate-600 leading-relaxed mb-8">
-            BusSphere connects travellers with Malaysia's top-rated bus operators through a single, unified platform. Real-time seat availability, instant digital tickets, and live journey updates — all in your pocket.
+            redBusconnects travellers with Malaysia's top-rated bus operators through a single, unified platform. Real-time seat availability, instant digital tickets, and live journey updates — all in your pocket.
           </p>
           <Link
             href="/search"

@@ -1,5 +1,5 @@
-import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export async function generateTicketPDF(booking: any) {
   // Create a temporary container
@@ -37,7 +37,7 @@ export async function generateTicketPDF(booking: any) {
       <!-- Left part -->
       <div style="flex: 1; padding: 30px; border-right: 2px dashed #E11D48; position: relative;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="margin: 0; color: #E11D48; font-size: 28px; font-weight: 900; letter-spacing: -1px;">BusSphere</h2>
+          <h2 style="margin: 0; color: #E11D48; font-size: 28px; font-weight: 900; letter-spacing: -1px;">redBus</h2>
           <div style="text-align: right;">
             <div style="font-size: 12px; color: #777; text-transform: uppercase; font-weight: bold;">Booking Ref</div>
             <div style="font-size: 20px; font-family: monospace; font-weight: bold;">${booking.booking_reference}</div>
@@ -90,7 +90,7 @@ export async function generateTicketPDF(booking: any) {
           </div>
         </div>
         <div style="font-family: monospace; font-size: 18px; margin-bottom: 20px;">${booking.booking_reference}</div>
-        <div style="font-size: 12px; opacity: 0.8;">Thank you for choosing BusSphere!</div>
+        <div style="font-size: 12px; opacity: 0.8;">Thank you for choosing redBus!</div>
       </div>
     </div>
   `;
@@ -130,7 +130,7 @@ export async function generateInvoicePDF(booking: any) {
       <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #E11D48; padding-bottom: 20px; margin-bottom: 30px;">
         <div>
           <h1 style="color: #E11D48; margin: 0; font-size: 32px; font-weight: 900;">INVOICE</h1>
-          <div style="margin-top: 10px; color: #777;">BusSphere Platform</div>
+          <div style="margin-top: 10px; color: #777;">redBusPlatform</div>
         </div>
         <div style="text-align: right;">
           <div style="font-size: 12px; color: #777;">Invoice Date</div>

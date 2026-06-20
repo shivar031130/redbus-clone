@@ -32,7 +32,7 @@ export default function PrivacyPage() {
           },
           {
             title: '6. Your Rights (PDPA)',
-            body: 'Under Malaysia\'s Personal Data Protection Act 2010 (PDPA), you have the right to access, correct, and withdraw consent to the processing of your personal data. To exercise these rights, contact us at privacy@bussphere.my.',
+            body: 'Under Malaysia\'s Personal Data Protection Act 2010 (PDPA), you have the right to access, correct, and withdraw consent to the processing of your personal data. To exercise these rights, contact us at privacy@redBus.my.',
           },
           {
             title: '7. Cookies',
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
           },
           {
             title: '9. Contact Us',
-            body: 'For privacy-related enquiries or data subject requests, contact our Data Protection Officer at privacy@bussphere.my or call +60 3-2345 6789.',
+            body: 'For privacy-related enquiries or data subject requests, contact our Data Protection Officer at privacy@redBus.my or call +60 3-2345 6789.',
           },
         ].map((section) => (
           <section key={section.title}>

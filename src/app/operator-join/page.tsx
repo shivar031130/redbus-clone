@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { ArrowRight, BarChart3, BusFront, CheckCircle, Headphones, Loader2, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowRight, BusFront, CheckCircle, BarChart3, ShieldCheck, Headphones, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const benefits = [
-  { icon: BarChart3, title: 'Grow Your Revenue', desc: 'Tap into BusSphere\'s growing user base of 1M+ travellers and fill more seats on every trip.' },
+  { icon: BarChart3, title: 'Grow Your Revenue', desc: 'Tap into redBus\'s growing user base of 1M+ travellers and fill more seats on every trip.' },
   { icon: ShieldCheck, title: 'Easy Fleet Management', desc: 'Manage your buses, routes, schedules, and bookings from one powerful operator dashboard.' },
   { icon: BarChart3, title: 'Real-time Analytics', desc: 'Track occupancy rates, revenue trends, and passenger data with live reporting tools.' },
   { icon: Headphones, title: 'Dedicated Support', desc: 'Your own account manager and priority support line to resolve any operational issue fast.' },
@@ -16,7 +16,7 @@ const steps = [
   { step: '01', title: 'Submit Application', desc: 'Fill in your company details, registration number, and fleet information below.' },
   { step: '02', title: 'Verification', desc: 'Our team reviews your application within 2–5 business days and may request documents.' },
   { step: '03', title: 'Onboarding', desc: 'Get access to the operator portal, set up your routes and buses, and start selling tickets.' },
-  { step: '04', title: 'Go Live', desc: 'Your routes appear on BusSphere instantly — start earning from day one.' },
+  { step: '04', title: 'Go Live', desc: 'Your routes appear on redBusinstantly — start earning from day one.' },
 ];
 
 export default function OperatorJoinPage() {
@@ -44,7 +44,7 @@ export default function OperatorJoinPage() {
               <BusFront className="h-4 w-4 text-blue-300" /> For Bus Operators
             </div>
             <h1 className="text-5xl font-bold leading-tight mb-6">
-              Partner with BusSphere.<br />
+              Partner with redBus.<br />
               <span className="text-blue-300">Grow your fleet.</span>
             </h1>
             <p className="text-white/70 text-lg leading-relaxed mb-8">

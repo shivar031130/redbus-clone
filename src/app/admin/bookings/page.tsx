@@ -1,18 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -20,14 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Loader2, RefreshCw, Eye, CheckCircle, XCircle, Download } from 'lucide-react';
 import {
   fetchBookings,
   updateBookingStatus,
   type AdminBooking,
 } from '@/lib/supabase/admin-queries';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { CheckCircle, Download, Eye, Loader2, RefreshCw, Search, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const statusBadge: Record<string, string> = {
   pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -85,8 +85,7 @@ export default function AdminBookingsPage() {
     const rows = bookings
       .map(
         (b) =>
-          `"${b.booking_reference}","${b.profiles?.email ?? b.client_id}","${
-            b.schedules?.routes?.origin ?? ''
+          `"${b.booking_reference}","${b.profiles?.email ?? b.client_id}","${b.schedules?.routes?.origin ?? ''
           } → ${b.schedules?.routes?.destination ?? ''}","${b.total_amount}","${b.status}","${b.created_at}"`
       )
       .join('\n');
@@ -94,7 +93,7 @@ export default function AdminBookingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bussphere-bookings-${Date.now()}.csv`;
+    a.download = `redBus-bookings-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('CSV exported!');

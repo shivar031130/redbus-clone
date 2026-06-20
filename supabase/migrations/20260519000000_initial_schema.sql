@@ -1,4 +1,4 @@
--- Initial Supabase Schema for BusSphere Malaysia
+-- Initial Supabase Schema for redBusMalaysia
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

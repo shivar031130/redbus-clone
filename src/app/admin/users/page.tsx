@@ -1,18 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -21,22 +20,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Search,
-  Loader2,
-  RefreshCw,
-  Trash2,
-  Eye,
-  ShieldCheck,
-  Download,
-} from 'lucide-react';
-import {
+  deleteUser,
   fetchUsers,
   updateUserRole,
-  deleteUser,
   type AdminProfile,
 } from '@/lib/supabase/admin-queries';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
+import {
+  Download,
+  Eye,
+  Loader2,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const roleBadge: Record<string, string> = {
   admin: 'bg-purple-50 text-purple-700 border-purple-200',
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bussphere-users-${Date.now()}.csv`;
+    a.download = `redBus-users-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('CSV exported!');

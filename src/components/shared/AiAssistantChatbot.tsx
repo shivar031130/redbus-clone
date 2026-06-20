@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { MessageSquare, X, Send, Bot, User, Sparkles, AlertCircle, Loader2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Bot, Image as ImageIcon, Loader2, Send, Sparkles, User, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface Message {
   role: "user" | "assistant";
@@ -53,6 +53,20 @@ export function AiAssistantChatbot() {
   // Dynamic import of puter to avoid Next.js SSR error
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+        const reason = event.reason;
+        // Suppress unhandled promise rejections from Puter.js's internal XHR/whoami calls
+        if (
+          reason &&
+          (reason instanceof XMLHttpRequest || 
+           (typeof reason === "object" && (reason._puterReq || reason.status === 401 || reason.message === "Unauthorized")))
+        ) {
+          event.preventDefault();
+        }
+      };
+
+      window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
       import("@heyputer/puter.js")
         .then((module) => {
           setPuterInstance(module.puter);
@@ -60,6 +74,10 @@ export function AiAssistantChatbot() {
         .catch((err) => {
           console.error("Failed to load Puter.js:", err);
         });
+
+      return () => {
+        window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      };
     }
   }, []);
 
@@ -88,7 +106,7 @@ export function AiAssistantChatbot() {
 
       if (puterInstance) {
         // System prompt context to guide the model
-        const systemPrompt = `You are a helpful, friendly AI Travel Assistant for BusSphere Malaysia, a premium bus ticket booking platform.
+        const systemPrompt = `You are a helpful, friendly AI Travel Assistant for redBusMalaysia, a premium bus ticket booking platform.
 You should assist users with booking tickets, looking up routes (e.g. Kuala Lumpur to Penang, Johor Bahru to Larkin, etc.), explaining features, refund policies, security, and other passenger queries.
 Be polite, concise, and helpful.
 User Question: ${promptToSend}`;
@@ -107,11 +125,11 @@ User Question: ${promptToSend}`;
           // Attempt using the nex-agi/nex-n2-pro:free model
           const response = currentImage
             ? await puterInstance.ai.chat(systemPrompt, currentImage, {
-                model: "nex-agi/nex-n2-pro:free"
-              })
+              model: "nex-agi/nex-n2-pro:free"
+            })
             : await puterInstance.ai.chat(systemPrompt, {
-                model: "nex-agi/nex-n2-pro:free"
-              });
+              model: "nex-agi/nex-n2-pro:free"
+            });
           responseText = getResponseText(response);
         } catch (modelErr) {
           console.warn("nex-agi/nex-n2-pro:free model failed, falling back to default Puter model...", modelErr);

@@ -12,27 +12,27 @@ export default function TermsPage() {
         {[
           {
             title: '1. Acceptance of Terms',
-            body: 'By accessing or using the BusSphere platform ("Service"), you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use the Service.',
+            body: 'By accessing or using the redBusplatform ("Service"), you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use the Service.',
           },
           {
             title: '2. Use of the Service',
-            body: 'BusSphere provides an online platform for booking inter-city bus tickets in Malaysia. You must be at least 18 years of age or have parental consent to use the Service. You agree to provide accurate information when creating an account or making a booking.',
+            body: 'redBusprovides an online platform for booking inter-city bus tickets in Malaysia. You must be at least 18 years of age or have parental consent to use the Service. You agree to provide accurate information when creating an account or making a booking.',
           },
           {
             title: '3. Bookings and Payments',
-            body: 'All bookings are subject to seat availability and operator confirmation. Prices displayed include all applicable taxes and service fees. Payment must be made in full at the time of booking. BusSphere acts as an intermediary between passengers and bus operators; the transport contract is directly between the passenger and the operator.',
+            body: 'All bookings are subject to seat availability and operator confirmation. Prices displayed include all applicable taxes and service fees. Payment must be made in full at the time of booking. redBusacts as an intermediary between passengers and bus operators; the transport contract is directly between the passenger and the operator.',
           },
           {
             title: '4. Cancellations and Refunds',
-            body: 'Cancellation and refund policies are set by individual operators and are displayed at the time of booking. BusSphere\'s service fee may be non-refundable. Refunds approved by operators will be processed within 5–14 business days. In the event of an operator cancellation, passengers are entitled to a full refund.',
+            body: 'Cancellation and refund policies are set by individual operators and are displayed at the time of booking. redBus\'s service fee may be non-refundable. Refunds approved by operators will be processed within 5–14 business days. In the event of an operator cancellation, passengers are entitled to a full refund.',
           },
           {
             title: '5. User Responsibilities',
-            body: 'You are responsible for arriving at the boarding point on time. BusSphere is not liable for missed departures. You agree not to use the Service for any unlawful purpose, and not to reproduce, duplicate, or exploit any part of the Service without express written permission.',
+            body: 'You are responsible for arriving at the boarding point on time. redBusis not liable for missed departures. You agree not to use the Service for any unlawful purpose, and not to reproduce, duplicate, or exploit any part of the Service without express written permission.',
           },
           {
             title: '6. Limitation of Liability',
-            body: 'BusSphere acts as a technology intermediary only. We are not responsible for delays, cancellations, accidents, or any other events during the journey. To the maximum extent permitted by Malaysian law, BusSphere\'s liability shall be limited to the booking fee paid for the affected journey.',
+            body: 'redBusacts as a technology intermediary only. We are not responsible for delays, cancellations, accidents, or any other events during the journey. To the maximum extent permitted by Malaysian law, redBus\'s liability shall be limited to the booking fee paid for the affected journey.',
           },
           {
             title: '7. Changes to Terms',
@@ -44,7 +44,7 @@ export default function TermsPage() {
           },
           {
             title: '9. Contact',
-            body: 'For questions regarding these Terms, please contact us at legal@bussphere.my or write to us at Level 12, Menara TM, Jalan Pantai Baru, 59200 Kuala Lumpur.',
+            body: 'For questions regarding these Terms, please contact us at legal@redBus.my or write to us at Level 12, Menara TM, Jalan Pantai Baru, 59200 Kuala Lumpur.',
           },
         ].map((section) => (
           <section key={section.title}>

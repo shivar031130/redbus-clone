@@ -1,14 +1,14 @@
-import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
+import Link from 'next/link';
 
 const faqs = [
   {
     category: 'Booking',
     items: [
-      { q: 'How do I book a ticket on BusSphere?', a: 'Search for your route on the homepage, select your preferred schedule and seats, then proceed to checkout. Payment can be made via FPX, card, or e-wallet.' },
+      { q: 'How do I book a ticket on redBus?', a: 'Search for your route on the homepage, select your preferred schedule and seats, then proceed to checkout. Payment can be made via FPX, card, or e-wallet.' },
       { q: 'Can I book for multiple passengers?', a: 'Yes! You can select multiple seats in the seat picker and enter each passenger\'s details individually during checkout.' },
       { q: 'How early should I book?', a: 'We recommend booking at least 24–48 hours in advance for popular routes, especially on weekends and public holidays.' },
-      { q: 'Is there a booking fee?', a: 'BusSphere charges a small service fee of RM 1.00 – RM 2.50 per ticket depending on the operator and route.' },
+      { q: 'Is there a booking fee?', a: 'redBuscharges a small service fee of RM 1.00 – RM 2.50 per ticket depending on the operator and route.' },
     ],
   },
   {
@@ -16,7 +16,7 @@ const faqs = [
     items: [
       { q: 'Where is my e-ticket?', a: 'Your e-ticket is available in your dashboard under "My Bookings" immediately after a confirmed payment. You can also download a PDF.' },
       { q: 'Do I need to print my ticket?', a: 'No — you can show the digital boarding pass (QR code) directly from your phone to the bus conductor.' },
-      { q: 'What if I lose my booking reference?', a: 'Log in to your BusSphere account and navigate to "My Bookings" to find all your active and past bookings.' },
+      { q: 'What if I lose my booking reference?', a: 'Log in to your redBusaccount and navigate to "My Bookings" to find all your active and past bookings.' },
     ],
   },
   {
@@ -43,7 +43,7 @@ export default function FAQPage() {
       <section className="bg-[#0A2540] text-white">
         <div className="max-w-4xl mx-auto px-6 py-20 text-center">
           <h1 className="text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="text-white/70 text-xl">Everything you need to know about BusSphere.</p>
+          <p className="text-white/70 text-xl">Everything you need to know about redBus.</p>
         </div>
       </section>
 

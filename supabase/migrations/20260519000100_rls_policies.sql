@@ -1,4 +1,4 @@
--- Migration to fix Row Level Security (RLS) policies for all tables in BusSphere Malaysia
+-- Migration to fix Row Level Security (RLS) policies for all tables in redBusMalaysia
 -- Run this in your Supabase SQL Editor to enable full client/operator/admin actions!
 
 -- 1. Profiles Table Policies
